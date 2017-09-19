@@ -7,6 +7,10 @@ print("last write date!")
 
 nshards = 3
 lowestnewshard = 3
+
+totalprefixes=100
+pfxpershard = totalprefixes/nshards
+
 startwhen = 120 // In 2 minutes - so we see 'most move over
                 //Generator puts a 5 minute gap between runs anyway
 nshardkeys = 100
@@ -54,9 +58,9 @@ print(newObjectId.getTimestamp())
 
 
 print("Moving Chunks")
-for(x=0;x<100;x++){
+for(x=0;x<totalprefixes;x++){
 	split = {_id:{s:x,i:newObjectId}};
-	shard = "shard_"+((x%nshards)+lowestnewshard);
+	shard = "shard_"+(Math.floor(x/pfxpershard)+lowestnewshard);
 	print ("Moving " + tojson(split) + " to " + shard);
 
 	print("Checking it's empty")
@@ -70,13 +74,13 @@ for(x=0;x<100;x++){
 
 	}
 	r = sh.splitAt("objStore.blobs",split);
-	if(r['ok'] != 1) printjson(r)
+	if(r['ok'] != 1) {printjson(r)}
 	r=sh.moveChunk("objStore.blobs",split,shard)
-if(r['ok'] != 1) printjson(r)
+	if(r['ok'] != 1){ printjson(r)}
 	r=sh.splitAt("objStore.references",split);
-if(r['ok'] != 1) printjson(r)
+	if(r['ok'] != 1){ printjson(r)}
 	r=sh.moveChunk("objStore.references",split,shard)
-if(r['ok'] != 1) printjson(r)
+	if(r['ok'] != 1) {printjson(r)}
 	
 }
 
